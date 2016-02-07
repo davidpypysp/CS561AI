@@ -3,7 +3,7 @@ import copy
 import sys
 import os
 
-infinity = 65536
+infinity = 100 * 30
 grid_score = [[0 for col in range(5)] for row in range(5)]
 adjacent_dir = [[1, 0], [0, -1], [0, 1], [-1, 0]]
 X = ['A', 'B', 'C', 'D', 'E']
@@ -13,7 +13,7 @@ trace_state_output = 0
 part2_flag = False
 
 
-# function
+# function #############################################################
 
 def get_node(pos):
     "return node description of a position"
@@ -92,6 +92,7 @@ def get_new_state(pos, state, player):
 
 def greedy(state, player):
     "greedy algorithm to get the new state"
+    if is_full(state): return copy.deepcopy(state)
     target_pos = [0, 0]
     e = evaluation(state, player)
     max_e = e
@@ -124,7 +125,7 @@ def minimax_traverse_output(node, depth, value):
     "for traverse log output line"
     if part2_flag: return
     value = to_infinity(value)
-    line = '\n' + node + ',' + str(depth) + ',' + value
+    line = os.linesep + node + ',' + str(depth) + ',' + value
     traverse_log_output.write(line)
 
 
@@ -170,7 +171,7 @@ def alphabeta_traverse_output(node, depth, value, a, b):
     value = to_infinity(value)
     a = to_infinity(a)
     b = to_infinity(b)
-    line = '\n' + node + ',' + str(depth) + ',' + value + ',' + a + ',' + b
+    line = os.linesep + node + ',' + str(depth) + ',' + value + ',' + a + ',' + b
     traverse_log_output.write(line)
 
 
@@ -218,18 +219,18 @@ def alphabeta(node, cur, depth, state, player, a, b, max_flag):
         return [best_value, target_state]
 
 
+##################################################################################
 
 
 
 
 
-
-
+# main program
 
 # input
 #filename = 'data/5/input.txt'
-filename = sys.argv[2]
-input = open(filename, 'r')
+file_name = sys.argv[2]
+input = open(file_name, 'r')
 task = int(input.readline().strip('\r\n'))
 if task != 4: # part1
     player = input.readline().strip('\r\n')
@@ -267,11 +268,15 @@ if task != 4: # part1
         if first_line_flag == True:
             first_line_flag = False
         else:
-            line += '\n'
+            line += os.linesep
         for j in range(5):
             line += target_state[i][j]
         next_state_output.write(line)
     next_state_output.close()
+
+
+
+
 
 else: # part2
     part2_flag = True
@@ -308,6 +313,7 @@ else: # part2
             player = player2
             algo = algo2
             depth = depth2
+
         if algo == 1:
             state = greedy(state, player)
         elif algo == 2:
@@ -319,7 +325,7 @@ else: # part2
         for y in range(5):
             line = ''
             if first_line_flag == False:
-                line += '\n'
+                line += os.linesep
             first_line_flag = False
             for x in range(5):
                 line += state[y][x]
