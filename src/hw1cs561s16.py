@@ -230,17 +230,17 @@ def alphabeta(node, cur, depth, state, player, a, b, max_flag):
 #filename = 'data/5/input.txt'
 filename = sys.argv[2]
 input = open(filename, 'r')
-task = int(input.readline().strip('\n'))
+task = int(input.readline().strip('\r\n'))
 if task != 4: # part1
-    player = input.readline().strip('\n')
-    depth = int(input.readline().strip('\n'))
+    player = input.readline().strip('\r\n')
+    depth = int(input.readline().strip('\r\n'))
     for i in range(5):
-        line = input.readline().strip('\n').split(' ')
+        line = input.readline().strip('\r\n').split(' ')
         for j in range(5):
             grid_score[i][j] = int(line[j])
     init_state = [['*' for col in range(5)] for row in range(5)]
     for i in range(5):
-        line = input.readline().strip('\n')
+        line = input.readline().strip('\r\n')
         for j in range(5):
             init_state[i][j] = line[j]
     input.close()
@@ -277,19 +277,19 @@ else: # part2
     part2_flag = True
 
     # input
-    player1 = input.readline().strip('\n')
-    algo1 = int(input.readline().strip('\n'))
-    depth1 = int(input.readline().strip('\n'))
-    player2 = input.readline().strip('\n')
-    algo2 = int(input.readline().strip('\n'))
-    depth2 = int(input.readline().strip('\n'))
+    player1 = input.readline().strip('\r\n')
+    algo1 = int(input.readline().strip('\r\n'))
+    depth1 = int(input.readline().strip('\r\n'))
+    player2 = input.readline().strip('\r\n')
+    algo2 = int(input.readline().strip('\r\n'))
+    depth2 = int(input.readline().strip('\r\n'))
     for i in range(5):
-        line = input.readline().strip('\n').split(' ')
+        line = input.readline().strip('\r\n').split(' ')
         for j in range(5):
             grid_score[i][j] = int(line[j])
     init_state = [['*' for col in range(5)] for row in range(5)]
     for i in range(5):
-        line = input.readline().strip('\n')
+        line = input.readline().strip('\r\n')
         for j in range(5):
             init_state[i][j] = line[j]
     input.close()
