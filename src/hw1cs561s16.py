@@ -251,7 +251,7 @@ if task != 4: # part1
         target_state = greedy(init_state, player)
     elif task == 2:
         traverse_log_output = open('traverse_log.txt', 'w')
-        traverse_log_output.write('Node,Depth,Value333333')
+        traverse_log_output.write('Node,Depth,Value')
         target_state = minimax('root', 0, depth, init_state, player, True)[1]
         traverse_log_output.close()
     elif task == 3:
@@ -313,7 +313,7 @@ else: # part2
         elif algo == 2:
             state = minimax('root', 0, depth, state, player, True)[1]
         elif algo == 3:
-            state == alphabeta('root', 0, depth, state, player, -infinity, infinity, True)[1]
+            state = alphabeta('root', 0, depth, state, player, -infinity, infinity, True)[1]
 
         # output to trace_state.txt
         for y in range(5):
