@@ -232,6 +232,8 @@ def alphabeta(node, cur, depth, state, player, a, b, max_flag):
 file_name = sys.argv[2]
 input = open(file_name, 'r')
 task = int(input.readline().strip('\r\n'))
+
+
 if task != 4: # part1
     player = input.readline().strip('\r\n')
     depth = int(input.readline().strip('\r\n'))
