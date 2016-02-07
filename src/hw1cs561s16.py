@@ -246,16 +246,19 @@ if task != 4: # part1
     input.close()
 
     # calculate
-    traverse_log_output = open('traverse_log.txt', 'w')
     next_state_output = open('next_state.txt', 'w')
     if task == 1:
         target_state = greedy(init_state, player)
     elif task == 2:
-        traverse_log_output.write('Node,Depth,Value')
+        traverse_log_output = open('traverse_log.txt', 'w')
+        traverse_log_output.write('Node,Depth,Value333333')
         target_state = minimax('root', 0, depth, init_state, player, True)[1]
+        traverse_log_output.close()
     elif task == 3:
+        traverse_log_output = open('traverse_log.txt', 'w')
         traverse_log_output.write('Node,Depth,Value,Alpha,Beta')
         target_state = alphabeta('root', 0, depth, init_state, player, -infinity, infinity, True)[1]
+        traverse_log_output.close()
 
     # result output to next_state.txt
     first_line_flag = True
@@ -268,7 +271,6 @@ if task != 4: # part1
         for j in range(5):
             line += target_state[i][j]
         next_state_output.write(line)
-    traverse_log_output.close()
     next_state_output.close()
 
 else: # part2
@@ -293,7 +295,6 @@ else: # part2
     input.close()
 
     # calculate
-    traverse_log_output = open('traverse_log.txt', 'w')
     trace_state_output = open('trace_state.txt', 'w')
     state = copy.deepcopy(init_state)
     player1_turn = True
@@ -326,7 +327,6 @@ else: # part2
 
         player1_turn = not player1_turn
 
-    traverse_log_output.close()
     trace_state_output.close()
 
 
