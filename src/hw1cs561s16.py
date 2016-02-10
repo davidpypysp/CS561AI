@@ -197,7 +197,7 @@ def alphabeta(node, cur, depth, state, player, a, b, max_flag):
             prev_a = a
             a = max(a, best_value)
             if b <= a:
-                alphabeta(node, cur, best_value, prev_a, b)
+                alphabeta_traverse_output(node, cur, best_value, prev_a, b)
                 break
             alphabeta_traverse_output(node, cur, best_value, a, b)
         return [best_value, target_state]
@@ -304,14 +304,16 @@ else: # part2
     # calculate
     trace_state_output = open('trace_state.txt', 'w')
     state = copy.deepcopy(init_state)
-    player1_turn = True
+    first_round = True
     first_line_flag = True
     while is_full(state) == False:
-        if player1_turn:
+        if first_round == True:
+            # it is player1's round
             player = player1
             algo = algo1
             depth = depth1
         else:
+            # player2's round
             player = player2
             algo = algo2
             depth = depth2
@@ -333,7 +335,7 @@ else: # part2
                 line += state[y][x]
             trace_state_output.write(line)
 
-        player1_turn = not player1_turn
+        first_round = not first_round
 
     trace_state_output.close()
 
