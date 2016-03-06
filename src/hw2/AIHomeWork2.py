@@ -11,6 +11,8 @@ class AtomicSentence(object):
         self.args = args
 
 
+
+
 # function
 def is_var(s=''):
     """Judge if s is a variable"""
