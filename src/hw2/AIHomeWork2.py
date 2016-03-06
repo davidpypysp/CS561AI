@@ -3,7 +3,7 @@ import sys
 # init
 SEP = '\n'
 output_file_name = 'output.txt'
-
+s_v_counter = 0
 
 class AtomicSentence(object):
     def __init__(self, name, args):
@@ -14,7 +14,7 @@ class AtomicSentence(object):
 # function
 def is_var(s=''):
     """Judge if s is a variable"""
-    return s.islower()
+    return s[0].islower()
 
 def is_const(s = ''):
     """Judge if s is a constant"""
@@ -45,46 +45,74 @@ def get_sentence_from_kb(s='', kb_map={}):
     if (len(s_array) == 1):
         right = get_atomic_sentence(s_array[0])
         if not kb_map.has_key(right.name):
-            kb_map[right.name] = {right: []}
+            kb_map[right.name] = [right]
         else:
-            kb_map[right.name][right] = []
+            kb_map[right.name].append[right]
     else:
         left = s_array[0].split(' && ')
         right = s_array[1]
         right = get_atomic_sentence(right)
-        left_array = []
+        impl_array = [right]
         for i in range(len(left)):
-            left_array.append(get_atomic_sentence(left[i]))
+            impl_array.append(get_atomic_sentence(left[i]))
         if not kb_map.has_key(right.name):
-            kb_map[right.name] = {right: left_array}
+            kb_map[right.name] = impl_array
         else:
-            kb_map[right.name][right] = left_array
+            kb_map[right.name].append(impl_array)
 
 
-def output_line(type='', sen=AtomicSentence()):
-    if type == 'ASK':
-        pass
-    elif type == 'True':
-        pass
-    elif type == 'False':
-        pass
 
-def unify(q1 = AtomicSentence(), q2 = AtomicSentence()):
+
+def unify(q1, q2, theta = {}):
     """if q1 q2 can be unified, that means their arguments can be matched
-        so we use q1's args replace q2's args and store to theta
     """
-    if(q1.name != q2.name): return False
-    theta = {}
+    if theta is None:
+        return None
+    if q1.name != q2.name:
+        return None
+    new_theta = theta
     for i in range(len(q1.args)):
-        if is_const(q1.args[i]):
-            if is_const(q2.args[i]) and q1.args[i] != q2.args[i]:
-                return False
-            elif is_var(q2.args[i]):
-                theta[q2.args[i]] = q1.args[i]
-    return theta
+        arg1 = q1.args[i]
+        arg2 = q2.args[i]
+        if is_const(arg1):
+            if is_const(arg2) and arg1 != arg2:
+                return None
+            elif is_var(arg2):
+                new_theta = unify(arg2, arg1, new_theta)
+        elif is_var(arg1):
+            new_theta = unify(arg1, arg2, new_theta)
+    return new_theta
+
+
+
+
+def unify_var(var, val, theta = {}):
+    if var in theta:
+        if is_var(theta[var]):
+            return unify_var(theta[var], val, theta)
+        elif is_const(theta[var]):
+            return theta
+    new_theta = theta.copy()
+    new_theta[var] = val
+    return new_theta
+
 
 def compose(theta1 = {}, theta2 = {}):
     """yield new theta that has same effect to theta1 and theta2"""
+
+    # SUBST(COMPOSE(theta1, theta2), p) = SUBST(theta2, SUBST(theta1, p))
+
+    compose_theta = {}
+    for l in theta1.keys():
+        if(theta2.has_key(theta1[l])):
+            compose_theta[l] = theta2[theta1[l]]
+
+    for l in theta2.keys():
+        if(not theta1.has_key(l)):
+            compose_theta[l] = theta2[l]
+
+
+
 
 
 def subst(theta = {}, qlist = []):
@@ -100,31 +128,83 @@ def subst(theta = {}, qlist = []):
 
 
 
+def standardized_variable(rule):
+    """replcae all variable in rule to v1, v2... form"""
+    dict = {}
+    new_rule = []
+    for sen in rule:
+        new_sen = AtomicSentence(sen.name, sen.args)
+        for i in range(len(sen.args)):
+            if is_const(sen.args): continue
+            if sen.args[i] not in dict:
+                v = "v_" + str(s_v_counter)
+                s_v_counter = s_v_counter + 1
+                dict[sen.args[i]] = v
+                new_sen.args[i] = v
+
+            else:
+                new_sen.args[i] = dict[sen.args[i]]
+        new_rule.append(new_sen)
+    return new_rule
+
+
+def output_line(type='', sen=AtomicSentence(), theta = {}):
+    new_sen = subst(theta, sen)
+    line = type + ': ' + new_sen.name + '('
+    for i in range(len(new_sen.args)):
+        if i != 0: line = line + ', '
+        if is_const(new_sen.args[i]):
+            line = line + sen.args[i]
+        elif is_var(new_sen.args[i]):
+            line = line + '_'
+    line = line + ')'
+
+    output.write(line)
 
 
 
-def back_chain_list(kb_map = {}, qlist = [], theta = {}):
-    """backward_chaining"""
-    """ps: theta is a map, but what we return is the set of theta, which means, a set of maps"""
-    answers = []
-    if len(qlist) == 0: return [theta]
 
-    q = qlist[0]
+def bc_ask(kb_map = {}, query = []):
+    """"""
+    return bc_or(kb_map, query, {})
 
-    for qi in kb_map[q.name].keys():
-        thetai = unify(q, qi)
-        if(thetai == False): continue
-        qi_list = kb_map[q.name][qi]
-        if len(qi_list) == 0: # qi is a fact
-            answers.append(compose(theta, thetai))
-        else: # qi is an implication
-            new_answers = back_chain_list(kb_map, subst(thetai, qi_list), compose(theta, thetai))
-            #answers = answers and new_answers
 
-    for thetai in answers:
-        new_answers = back_chain_list(kb_map, qlist[1:], thetai)
-        if new_answers != [thetai]:
-            return
+def bc_or(kb_map = {}, goal = AtomicSentence(), theta = {}):
+    """goal is rhs"""
+    output_line('ASK', goal, theta)
+    if not kb_map.has_key(goal.name):
+        output_line("False", goal, theta)
+    flag = False
+    for rule in kb_map[goal.name]:
+        standardized_rule = standardized_variable(rule)
+        lhs = standardized_rule[1:]
+        rhs = standardized_rule[0]
+        for theta1 in bc_and(kb_map, lhs, unify(rhs, goal, theta)):
+            flag = True
+            output_line('True', goal, theta1)
+            yield theta1
+    if flag == False:
+        output_line('False', goal, theta)
+
+
+
+
+
+def bc_and(kb_map = {}, goals = [], theta = {}):
+    """goals is lhs"""
+    if theta is None:
+        pass
+    elif not goals:
+        yield theta
+    else:
+        first, rest = goals[0], goals[1:]
+        for theta1 in bc_or(kb_map, subst(theta, first), theta):
+            for theta2 in bc_and(kb_map, rest, theta1):
+                yield theta2
+
+
+
+
 
 
 
