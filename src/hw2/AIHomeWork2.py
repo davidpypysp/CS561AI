@@ -6,7 +6,7 @@ output_file_name = 'output.txt'
 s_v_counter = 0
 
 class AtomicSentence(object):
-    def __init__(self, name, args):
+    def __init__(self, name = None, args = None):
         self.name = name
         self.args = args
 
@@ -35,10 +35,10 @@ def get_atomic_sentence(s=''):
 def get_query(s=''):
     'Switch the query string s to AtomicSentence class array'
     s_array = s.split(' && ')
-    q = []
+    qlist = []
     for i in range(len(s_array)):
-        q.append(get_atomic_sentence(s_array[i]))
-    return q
+        qlist.append(get_atomic_sentence(s_array[i]))
+    return qlist
 
 
 def get_sentence_from_kb(s='', kb_map={}):
@@ -47,9 +47,9 @@ def get_sentence_from_kb(s='', kb_map={}):
     if (len(s_array) == 1):
         right = get_atomic_sentence(s_array[0])
         if not kb_map.has_key(right.name):
-            kb_map[right.name] = [right]
+            kb_map[right.name] = [[right]]
         else:
-            kb_map[right.name].append[right]
+            kb_map[right.name].append([right])
     else:
         left = s_array[0].split(' && ')
         right = s_array[1]
@@ -58,7 +58,7 @@ def get_sentence_from_kb(s='', kb_map={}):
         for i in range(len(left)):
             impl_array.append(get_atomic_sentence(left[i]))
         if not kb_map.has_key(right.name):
-            kb_map[right.name] = impl_array
+            kb_map[right.name] = [impl_array]
         else:
             kb_map[right.name].append(impl_array)
 
@@ -80,9 +80,9 @@ def unify(q1, q2, theta = {}):
             if is_const(arg2) and arg1 != arg2:
                 return None
             elif is_var(arg2):
-                new_theta = unify(arg2, arg1, new_theta)
+                new_theta = unify_var(arg2, arg1, new_theta)
         elif is_var(arg1):
-            new_theta = unify(arg1, arg2, new_theta)
+            new_theta = unify_var(arg1, arg2, new_theta)
     return new_theta
 
 
@@ -117,16 +117,13 @@ def compose(theta1 = {}, theta2 = {}):
 
 
 
-def subst(theta = {}, qlist = []):
+def subst(theta = {}, sen = AtomicSentence()):
     """use theta to substitute qlist, return the new replaced qlist"""
-    new_qlist = []
-    for qi in qlist:
-        new_qi = AtomicSentence(qi.name, qi.args)
-        for i in range(len(qi.args)):
-            if(theta.has_key(qi.args[i])):
-                qi.args[i] = theta[qi.args[i]]
-        new_qlist.append(new_qi)
-    return new_qi
+    new_sen = AtomicSentence(sen.name, sen.args)
+    for i in range(len(new_sen.args)):
+        if(theta.has_key(new_sen.args[i])):
+            new_sen.args[i] = theta[new_sen.args[i]]
+    return new_sen
 
 
 
@@ -139,8 +136,8 @@ def standardized_variable(rule):
         for i in range(len(sen.args)):
             if is_const(sen.args): continue
             if sen.args[i] not in dict:
-                v = "v_" + str(s_v_counter)
-                s_v_counter = s_v_counter + 1
+                v = "v_" + str(standardized_variable.counter)
+                standardized_variable.counter = standardized_variable.counter + 1
                 dict[sen.args[i]] = v
                 new_sen.args[i] = v
 
@@ -148,7 +145,7 @@ def standardized_variable(rule):
                 new_sen.args[i] = dict[sen.args[i]]
         new_rule.append(new_sen)
     return new_rule
-
+standardized_variable.counter = 0
 
 def output_line(type='', sen=AtomicSentence(), theta = {}):
     new_sen = subst(theta, sen)
@@ -156,11 +153,11 @@ def output_line(type='', sen=AtomicSentence(), theta = {}):
     for i in range(len(new_sen.args)):
         if i != 0: line = line + ', '
         if is_const(new_sen.args[i]):
-            line = line + sen.args[i]
+            line = line + new_sen.args[i]
         elif is_var(new_sen.args[i]):
             line = line + '_'
     line = line + ')'
-
+    print line
     output.write(line)
 
 
@@ -168,7 +165,8 @@ def output_line(type='', sen=AtomicSentence(), theta = {}):
 
 def bc_ask(kb_map = {}, query = []):
     """"""
-    return bc_or(kb_map, query, {})
+    ans = bc_or(kb_map, query[0], {})
+    return ans
 
 
 def bc_or(kb_map = {}, goal = AtomicSentence(), theta = {}):
@@ -232,7 +230,8 @@ def bc_and(kb_map = {}, goals = [], theta = {}):
 # main program
 
 # input
-file_name = sys.argv[2]
+#file_name = sys.argv[2]
+file_name = 'samples_v4/sample01.txt'
 input = open(file_name, 'r')
 output = open(output_file_name, 'w')
 
@@ -243,6 +242,12 @@ for i in range(n):
     knowledge_base.append(input.readline().strip(SEP))
 
 kb_map = {}
-q = get_query(query)
+qlist = get_query(query)
 for i in range(len(knowledge_base)):
     get_sentence_from_kb(knowledge_base[i], kb_map)
+
+t = bc_ask(kb_map, qlist)
+t.next()
+output.close()
+input.close()
+
