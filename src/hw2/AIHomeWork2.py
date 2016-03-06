@@ -127,22 +127,22 @@ def subst(theta = {}, sen = AtomicSentence()):
 
 
 
-def standardized_variable(rule):
+def standardized_variable(rule): ### problem
     """replcae all variable in rule to v1, v2... form"""
     dict = {}
     new_rule = []
     for sen in rule:
         new_sen = AtomicSentence(sen.name, sen.args)
         for i in range(len(sen.args)):
-            if is_const(sen.args): continue
-            if sen.args[i] not in dict:
-                v = "v_" + str(standardized_variable.counter)
-                standardized_variable.counter = standardized_variable.counter + 1
-                dict[sen.args[i]] = v
-                new_sen.args[i] = v
+            if is_var(sen.args[i]):
+                if sen.args[i] not in dict:
+                    v = "v_" + str(standardized_variable.counter)
+                    standardized_variable.counter = standardized_variable.counter + 1
+                    dict[sen.args[i]] = v
+                    new_sen.args[i] = v
 
-            else:
-                new_sen.args[i] = dict[sen.args[i]]
+                else:
+                    new_sen.args[i] = dict[sen.args[i]]
         new_rule.append(new_sen)
     return new_rule
 standardized_variable.counter = 0
@@ -231,7 +231,7 @@ def bc_and(kb_map = {}, goals = [], theta = {}):
 
 # input
 #file_name = sys.argv[2]
-file_name = 'samples_v4/sample01.txt'
+file_name = 'samples_v4/sample02.txt'
 input = open(file_name, 'r')
 output = open(output_file_name, 'w')
 
