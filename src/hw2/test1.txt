@@ -1,0 +1,7 @@
+A(Anakin)
+4
+B(x) => A(x)
+C(x) => A(x)
+D(B) => A(x)
+D(Anakin)
+

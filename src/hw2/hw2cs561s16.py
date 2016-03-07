@@ -165,24 +165,23 @@ def bc_ask(kb_map = {}, query = []):
 def bc_or(kb_map = {}, goal = AtomicSentence(), theta = {}):
     """goal is rhs"""
     output_line('Ask', goal, theta)
-    if not kb_map.has_key(goal.name):
-        output_line("False", goal, theta)
     flag = False
-    first = True
-    for rule in kb_map[goal.name]:
-        standardized_rule = standardized_variable(rule)
-        lhs = standardized_rule[1:]
-        rhs = standardized_rule[0]
-        uni_theta = unify(rhs, goal, theta)
-        if uni_theta is None:
-            continue
-        if not first:
-            output_line('Ask', goal, theta)
-        for theta1 in bc_and(kb_map, lhs, uni_theta):
-            flag = True
-            output_line('True', goal, theta1)
-            yield theta1
-        first = False
+    if kb_map.has_key(goal.name):
+        first = True
+        for rule in kb_map[goal.name]:
+            standardized_rule = standardized_variable(rule)
+            lhs = standardized_rule[1:]
+            rhs = standardized_rule[0]
+            uni_theta = unify(rhs, goal, theta)
+            if uni_theta is None:
+                continue
+            if not first:
+                output_line('Ask', goal, theta)
+            for theta1 in bc_and(kb_map, lhs, uni_theta):
+                flag = True
+                output_line('True', goal, theta1)
+                yield theta1
+            first = False
 
     if flag == False: # not yield any success theta
         output_line('False', goal, theta)

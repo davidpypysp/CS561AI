@@ -164,9 +164,10 @@ def bc_ask(kb_map = {}, query = []):
 def bc_or(kb_map = {}, goal = AtomicSentence(), theta = {}):
     """goal is rhs"""
     output_line('Ask', goal, theta)
+    flag = False
     if not kb_map.has_key(goal.name):
         output_line("False", goal, theta)
-    flag = False
+        pass
     unified = False
     yielded = False
     first = True
