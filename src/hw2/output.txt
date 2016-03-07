@@ -5,7 +5,9 @@ Ask: A(Anakin)
 Ask: C(Anakin)
 False: C(Anakin)
 Ask: A(Anakin)
-Ask: D(B)
-False: D(B)
-False: A(Anakin)
-False
+Ask: D(B, Anakin)
+True: D(B, Anakin)
+True: A(Anakin)
+Ask: D(B, _)
+True: D(B, Anakin)
+True

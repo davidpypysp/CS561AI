@@ -1,7 +1,7 @@
-A(Anakin)
+A(Anakin) && D(B, y)
 4
 B(x) => A(x)
 C(x) => A(x)
-D(B) => A(x)
-D(Anakin)
+D(B, x) => A(x)
+D(B, Anakin)
 
