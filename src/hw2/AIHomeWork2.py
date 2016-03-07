@@ -1,4 +1,5 @@
 import sys
+import copy
 
 # init
 SEP = '\n'
@@ -99,27 +100,13 @@ def unify_var(var, val, theta = {}):
     return new_theta
 
 
-def compose(theta1 = {}, theta2 = {}):
-    """yield new theta that has same effect to theta1 and theta2"""
-
-    # SUBST(COMPOSE(theta1, theta2), p) = SUBST(theta2, SUBST(theta1, p))
-
-    compose_theta = {}
-    for l in theta1.keys():
-        if(theta2.has_key(theta1[l])):
-            compose_theta[l] = theta2[theta1[l]]
-
-    for l in theta2.keys():
-        if(not theta1.has_key(l)):
-            compose_theta[l] = theta2[l]
-
 
 
 
 
 def subst(theta = {}, sen = AtomicSentence()):
     """use theta to substitute qlist, return the new replaced qlist"""
-    new_sen = AtomicSentence(sen.name, sen.args)
+    new_sen = copy.deepcopy(sen)
     for i in range(len(new_sen.args)):
         if(theta.has_key(new_sen.args[i])):
             new_sen.args[i] = theta[new_sen.args[i]]
@@ -132,17 +119,17 @@ def standardized_variable(rule): ### problem
     dict = {}
     new_rule = []
     for sen in rule:
-        new_sen = AtomicSentence(sen.name, sen.args)
-        for i in range(len(sen.args)):
-            if is_var(sen.args[i]):
-                if sen.args[i] not in dict:
+        new_sen = copy.deepcopy(sen)
+        for i in range(len(new_sen.args)):
+            if is_var(new_sen.args[i]):
+                if new_sen.args[i] not in dict:
                     v = "v_" + str(standardized_variable.counter)
                     standardized_variable.counter = standardized_variable.counter + 1
-                    dict[sen.args[i]] = v
+                    dict[new_sen.args[i]] = v
                     new_sen.args[i] = v
 
                 else:
-                    new_sen.args[i] = dict[sen.args[i]]
+                    new_sen.args[i] = dict[new_sen.args[i]]
         new_rule.append(new_sen)
     return new_rule
 standardized_variable.counter = 0
@@ -158,32 +145,45 @@ def output_line(type='', sen=AtomicSentence(), theta = {}):
             line = line + '_'
     line = line + ')'
     print line
-    output.write(line)
+    output.write(line + SEP)
 
 
 
 
 def bc_ask(kb_map = {}, query = []):
     """"""
-    ans = bc_or(kb_map, query[0], {})
+    ans = bc_and(kb_map, query, {})
     return ans
 
 
 def bc_or(kb_map = {}, goal = AtomicSentence(), theta = {}):
     """goal is rhs"""
-    output_line('ASK', goal, theta)
+    output_line('Ask', goal, theta)
     if not kb_map.has_key(goal.name):
         output_line("False", goal, theta)
     flag = False
+    unified = False
+    yielded = False
+    first = True
     for rule in kb_map[goal.name]:
+
         standardized_rule = standardized_variable(rule)
         lhs = standardized_rule[1:]
         rhs = standardized_rule[0]
-        for theta1 in bc_and(kb_map, lhs, unify(rhs, goal, theta)):
+        uni_theta = unify(rhs, goal, theta)
+        if uni_theta == None: continue
+        #    output_line('ASK', goal, theta)
+        #    output_line('ASK', goal, theta)
+        if not first:
+            output_line('Ask', goal, theta)
+        for theta1 in bc_and(kb_map, lhs, uni_theta):
             flag = True
+            yielded = True
             output_line('True', goal, theta1)
             yield theta1
-    if flag == False:
+        first = False
+
+    if flag == False: # not yield any success theta
         output_line('False', goal, theta)
 
 
@@ -198,9 +198,12 @@ def bc_and(kb_map = {}, goals = [], theta = {}):
         yield theta
     else:
         first, rest = goals[0], goals[1:]
-        for theta1 in bc_or(kb_map, subst(theta, first), theta):
+        sub_first = subst(theta, first)
+        for theta1 in bc_or(kb_map, sub_first, theta):
             for theta2 in bc_and(kb_map, rest, theta1):
                 yield theta2
+
+
 
 
 
@@ -231,7 +234,7 @@ def bc_and(kb_map = {}, goals = [], theta = {}):
 
 # input
 #file_name = sys.argv[2]
-file_name = 'samples_v4/sample02.txt'
+file_name = 'samples_v4/sample04.txt'
 input = open(file_name, 'r')
 output = open(output_file_name, 'w')
 
@@ -247,7 +250,12 @@ for i in range(len(knowledge_base)):
     get_sentence_from_kb(knowledge_base[i], kb_map)
 
 t = bc_ask(kb_map, qlist)
-t.next()
+try:
+    t.next()
+except StopIteration:
+    output.write('False' + SEP)
+else:
+    output.write('True' + SEP)
 output.close()
 input.close()
 
