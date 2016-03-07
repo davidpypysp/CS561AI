@@ -16,9 +16,12 @@ class AtomicSentence(object):
 
 
 # function
-def is_var(s=''):
+
+
+def is_var(s = ''):
     """Judge if s is a variable"""
     return s[0].islower()
+
 
 def is_const(s = ''):
     """Judge if s is a constant"""
@@ -34,7 +37,7 @@ def get_atomic_sentence(s=''):
     return sen
 
 
-def get_query(s=''):
+def get_query(s = ''):
     'Switch the query string s to AtomicSentence class array'
     s_array = s.split(' && ')
     qlist = []
@@ -43,10 +46,10 @@ def get_query(s=''):
     return qlist
 
 
-def get_sentence_from_kb(s='', kb_map={}):
+def get_sentence_from_kb(s = '', kb_map = {}):
     """Get sentence (class type) from knowledge base"""
     s_array = s.split(' => ')
-    if (len(s_array) == 1):
+    if len(s_array) == 1:
         right = get_atomic_sentence(s_array[0])
         if not kb_map.has_key(right.name):
             kb_map[right.name] = [[right]]
@@ -148,7 +151,7 @@ def output_line(type='', sen=AtomicSentence(), theta = {}):
         elif is_var(new_sen.args[i]):
             line = line + '_'
     line = line + ')'
-    print line
+    #print line
     output.write(line + SEP)
 
 
@@ -156,9 +159,7 @@ def output_line(type='', sen=AtomicSentence(), theta = {}):
 
 def bc_ask(kb_map = {}, query = []):
     """"""
-    ans = bc_and(kb_map, query, {})
-    #ans = bc_or(kb_map, query[0], {})
-    return ans
+    return bc_and(kb_map, query, {})
 
 
 def bc_or(kb_map = {}, goal = AtomicSentence(), theta = {}):
@@ -167,20 +168,18 @@ def bc_or(kb_map = {}, goal = AtomicSentence(), theta = {}):
     if not kb_map.has_key(goal.name):
         output_line("False", goal, theta)
     flag = False
-    unified = False
-    yielded = False
     first = True
     for rule in kb_map[goal.name]:
         standardized_rule = standardized_variable(rule)
         lhs = standardized_rule[1:]
         rhs = standardized_rule[0]
         uni_theta = unify(rhs, goal, theta)
-        if uni_theta == None: continue
+        if uni_theta is None:
+            continue
         if not first:
             output_line('Ask', goal, theta)
         for theta1 in bc_and(kb_map, lhs, uni_theta):
             flag = True
-            yielded = True
             output_line('True', goal, theta1)
             yield theta1
         first = False
@@ -246,29 +245,31 @@ def bc_and(kb_map = {}, goals = [], theta = {}):
 # main program
 
 # input
-#file_name = sys.argv[2]
-file_name = 'samples_v4/sample05.txt'
+file_name = sys.argv[2]
 input = open(file_name, 'r')
 output = open(output_file_name, 'w')
 
 query = input.readline().strip(SEP)
 n = int(input.readline().strip(SEP))
+
+
 knowledge_base = []
 for i in range(n):
     knowledge_base.append(input.readline().strip(SEP))
+
+input.close()
 
 kb_map = {}
 qlist = get_query(query)
 for i in range(len(knowledge_base)):
     get_sentence_from_kb(knowledge_base[i], kb_map)
 
-t = bc_ask(kb_map, qlist)
 try:
-    t.next()
+    bc_ask(kb_map, qlist).next()
 except StopIteration:
     output.write('False')
 else:
     output.write('True')
 output.close()
-input.close()
+
 
