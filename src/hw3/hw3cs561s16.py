@@ -313,4 +313,6 @@ for query in queries:
     first = False
     ask(query, bn)
 
+output_file.close()
+
 
