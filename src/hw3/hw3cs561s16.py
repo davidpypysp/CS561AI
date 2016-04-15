@@ -153,11 +153,12 @@ def get_tf_values(num, l):
 
 def enumeration_ask(X={}, e={} , bn=Network()):
     for x in X.keys():
-        if bn.is_decision_node(x):
+        if e.__contains__(x):
             if e[x] != X[x]:
                 return 0.0
             else:
                 X.__delitem__(x)
+
 
 
     x_len = len(X)
